@@ -1,0 +1,1435 @@
+{
+  "info": {
+    "name": "TareaU2 · Caso 10 Eventos (PostgreSQL + MongoDB)",
+    "description": "Inscripción (PostgreSQL) · Evento (MongoDB) · Encuesta de satisfacción (MongoDB). Crea sus datos y los limpia: se puede correr dos veces seguidas.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1 · Auth (PostgreSQL · login del proyecto de clase)",
+      "item": [
+        {
+          "name": "Registrar asistente A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ana Asistente {{runId}}\",\n  \"email\": \"ana{{runId}}@espe.edu.ec\",\n  \"password\": \"secreto123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Datos únicos por corrida: la colección se puede correr dos veces seguidas",
+                  "const runId = Date.now().toString(36) + Math.floor(Math.random() * 1000);",
+                  "pm.collectionVariables.set('runId', runId);",
+                  "pm.collectionVariables.set('eventCode', 'EVT-' + (1000 + Math.floor(Math.random() * 9000)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Registro A → 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ana{{runId}}@espe.edu.ec\",\n  \"password\": \"secreto123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Login A → 200\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('Devuelve el token JWT', () => pm.expect(b.token).to.be.a('string'));",
+                  "pm.collectionVariables.set('tokenA', b.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mi usuario A",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Me → 200\", () => pm.response.to.have.status(200));",
+                  "const u = pm.response.json();",
+                  "pm.test('No devuelve password', () => pm.expect(u).to.not.have.property('password'));",
+                  "pm.collectionVariables.set('userIdA', u.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar asistente B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bruno Asistente {{runId}}\",\n  \"email\": \"bruno{{runId}}@espe.edu.ec\",\n  \"password\": \"secreto123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Registro B → 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"bruno{{runId}}@espe.edu.ec\",\n  \"password\": \"secreto123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Login B → 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenB', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2 · Catálogo de eventos (MongoDB)",
+      "item": [
+        {
+          "name": "Crear evento sin token → 401",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"{{eventCode}}\",\n  \"title\": \"Congreso de Desarrollo Web {{runId}}\",\n  \"description\": \"Evento de prueba creado por la colección de Postman\",\n  \"category\": \"CONFERENCIA\",\n  \"sede\": {\n    \"name\": \"Coliseo ESPE\",\n    \"address\": \"Av. General Rumiñahui s/n\",\n    \"city\": \"Sangolquí\",\n    \"room\": \"Auditorio 1\"\n  },\n  \"agenda\": [\n    {\n      \"day\": 1,\n      \"startTime\": \"11:00\",\n      \"endTime\": \"12:30\",\n      \"title\": \"Taller de APIs REST\",\n      \"speaker\": \"Ing. Pérez\"\n    },\n    {\n      \"day\": 1,\n      \"startTime\": \"09:00\",\n      \"endTime\": \"10:30\",\n      \"title\": \"Apertura y keynote\",\n      \"speaker\": \"Dra. Andrade\"\n    }\n  ],\n  \"capacity\": 1,\n  \"price\": 0,\n  \"startDate\": \"2026-12-10T09:00:00.000Z\",\n  \"endDate\": \"2026-12-11T18:00:00.000Z\",\n  \"tags\": [\n    \"Web\",\n    \"API\",\n    \"web\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Escritura sin JWT → 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear evento inválido → 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"X-1\",\n  \"title\": \"abc\",\n  \"category\": \"FIESTA\",\n  \"capacity\": 0,\n  \"agenda\": [\n    {\n      \"startTime\": \"10:00\",\n      \"endTime\": \"09:00\",\n      \"title\": \"x\"\n    }\n  ],\n  \"startDate\": \"2026-12-10\",\n  \"endDate\": \"2026-12-01\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Validación → 400\", () => pm.response.to.have.status(400));",
+                  "const fields = pm.response.json().errors.map(e => e.field);",
+                  "pm.test('Informa los campos inválidos en español', () => { pm.expect(fields).to.include.members(['code', 'category', 'capacity', 'endDate', 'sede']); pm.expect(pm.response.text()).to.include('La categoría FIESTA no es válida'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear evento (aforo 1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"{{eventCode}}\",\n  \"title\": \"Congreso de Desarrollo Web {{runId}}\",\n  \"description\": \"Evento de prueba creado por la colección de Postman\",\n  \"category\": \"CONFERENCIA\",\n  \"sede\": {\n    \"name\": \"Coliseo ESPE\",\n    \"address\": \"Av. General Rumiñahui s/n\",\n    \"city\": \"Sangolquí\",\n    \"room\": \"Auditorio 1\"\n  },\n  \"agenda\": [\n    {\n      \"day\": 1,\n      \"startTime\": \"11:00\",\n      \"endTime\": \"12:30\",\n      \"title\": \"Taller de APIs REST\",\n      \"speaker\": \"Ing. Pérez\"\n    },\n    {\n      \"day\": 1,\n      \"startTime\": \"09:00\",\n      \"endTime\": \"10:30\",\n      \"title\": \"Apertura y keynote\",\n      \"speaker\": \"Dra. Andrade\"\n    }\n  ],\n  \"capacity\": 1,\n  \"price\": 0,\n  \"startDate\": \"2026-12-10T09:00:00.000Z\",\n  \"endDate\": \"2026-12-11T18:00:00.000Z\",\n  \"tags\": [\n    \"Web\",\n    \"API\",\n    \"web\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Crear evento → 201\", () => pm.response.to.have.status(201));",
+                  "const e = pm.response.json();",
+                  "pm.collectionVariables.set('eventId', e._id);",
+                  "pm.test('pre(validate) ordena la agenda y limpia tags; virtual durationDays', () => {",
+                  "  pm.expect(e.agenda[0].startTime).to.eql('09:00');",
+                  "  pm.expect(e.tags).to.eql(['web', 'api']);",
+                  "  pm.expect(e.durationDays).to.eql(2);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Código duplicado → 409 (E11000)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"{{eventCode}}\",\n  \"title\": \"Congreso de Desarrollo Web {{runId}}\",\n  \"description\": \"Evento de prueba creado por la colección de Postman\",\n  \"category\": \"CONFERENCIA\",\n  \"sede\": {\n    \"name\": \"Coliseo ESPE\",\n    \"address\": \"Av. General Rumiñahui s/n\",\n    \"city\": \"Sangolquí\",\n    \"room\": \"Auditorio 1\"\n  },\n  \"agenda\": [\n    {\n      \"day\": 1,\n      \"startTime\": \"11:00\",\n      \"endTime\": \"12:30\",\n      \"title\": \"Taller de APIs REST\",\n      \"speaker\": \"Ing. Pérez\"\n    },\n    {\n      \"day\": 1,\n      \"startTime\": \"09:00\",\n      \"endTime\": \"10:30\",\n      \"title\": \"Apertura y keynote\",\n      \"speaker\": \"Dra. Andrade\"\n    }\n  ],\n  \"capacity\": 1,\n  \"price\": 0,\n  \"startDate\": \"2026-12-10T09:00:00.000Z\",\n  \"endDate\": \"2026-12-11T18:00:00.000Z\",\n  \"tags\": [\n    \"Web\",\n    \"API\",\n    \"web\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Índice único code → 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar con regex, proyección y orden",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/events?q=desarrollo web {{runId}}&fields=title,code,startDate&sort=-startDate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "desarrollo web {{runId}}"
+                },
+                {
+                  "key": "fields",
+                  "value": "title,code,startDate"
+                },
+                {
+                  "key": "sort",
+                  "value": "-startDate"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Listar → 200\", () => pm.response.to.have.status(200));",
+                  "const list = pm.response.json();",
+                  "pm.test('Regex encuentra el evento y la proyección oculta capacity', () => { pm.expect(list.length).to.be.at.least(1); pm.expect(list[0]).to.have.property('title'); pm.expect(list[0]).to.not.have.property('capacity'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET id inválido → 400",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/123",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "123"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"ObjectId inválido → 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET id inexistente → 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/64b000000000000000000000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "64b000000000000000000000"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Evento inexistente → 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT actualizar (findById + save)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{eventId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Congreso de Desarrollo Web {{runId}} · 2.ª edición\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"PUT → 200\", () => pm.response.to.have.status(200));",
+                  "pm.test('Título actualizado', () => pm.expect(pm.response.json().title).to.include('2.ª edición'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3 · Inscripción (PostgreSQL valida MongoDB)",
+      "item": [
+        {
+          "name": "Inscribir a evento inexistente → 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "registrations"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventId\": \"64b000000000000000000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"eventId no existe en MongoDB → 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inscribir con eventId mal formado → 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "registrations"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventId\": \"abc\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"eventId inválido → 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inscribir A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "registrations"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventId\": \"{{eventId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Inscripción A → 201\", () => pm.response.to.have.status(201));",
+                  "const r = pm.response.json();",
+                  "pm.collectionVariables.set('registrationId', r.id);",
+                  "pm.test('Guarda el _id de MongoDB como String y userId del JWT', () => { pm.expect(r.eventId).to.eql(pm.collectionVariables.get('eventId')); pm.expect(r.userId).to.eql(Number(pm.collectionVariables.get('userIdA'))); pm.expect(r.status).to.eql('CONFIRMADA'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A se inscribe otra vez → 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "registrations"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventId\": \"{{eventId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Inscripción duplicada → 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B sin cupo → 409 (aforo)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenB}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "registrations"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventId\": \"{{eventId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Aforo completo → 409\", () => pm.response.to.have.status(409));",
+                  "pm.test('Mensaje de aforo', () => pm.expect(pm.response.json().message).to.include('Aforo completo'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mis inscripciones ($in + Map)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/registrations/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "registrations",
+                "me"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Mis inscripciones → 200\", () => pm.response.to.have.status(200));",
+                  "const mine = pm.response.json();",
+                  "pm.test('Une PostgreSQL con el título del evento de MongoDB', () => { pm.expect(mine[0].event.title).to.include('Congreso de Desarrollo Web'); pm.expect(mine[0].event).to.not.have.property('agenda'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Detalle del evento con cupos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{eventId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Detalle → 200\", () => pm.response.to.have.status(200));",
+                  "pm.test('Aforo ocupado contado en PostgreSQL', () => { const e = pm.response.json(); pm.expect(e.seatsTaken).to.eql(1); pm.expect(e.seatsAvailable).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4 · Encuesta (MongoDB valida PostgreSQL)",
+      "item": [
+        {
+          "name": "Encuesta de inscripción ajena → 403",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenB}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/surveys",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "surveys"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registrationId\": \"{{registrationId}}\",\n  \"rating\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"No es dueño de la inscripción → 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Encuesta de inscripción inexistente → 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/surveys",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "surveys"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registrationId\": 999999999,\n  \"rating\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Inscripción no existe en PostgreSQL → 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Encuesta inválida → 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/surveys",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "surveys"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registrationId\": \"{{registrationId}}\",\n  \"rating\": 9\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Calificación fuera de rango → 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear encuesta A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/surveys",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "surveys"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registrationId\": \"{{registrationId}}\",\n  \"rating\": 5,\n  \"comment\": \"Excelente organización\",\n  \"wouldRecommend\": true,\n  \"aspects\": [\n    \"CONTENIDO\",\n    \"PONENTES\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Encuesta → 201\", () => pm.response.to.have.status(201));",
+                  "const s = pm.response.json();",
+                  "pm.test('Copia attendeeName de PostgreSQL y userId del JWT', () => { pm.expect(s.attendeeName).to.include('Ana Asistente'); pm.expect(s.userId).to.eql(Number(pm.collectionVariables.get('userIdA'))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Encuesta repetida → 409 (E11000)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/surveys",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "surveys"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registrationId\": \"{{registrationId}}\",\n  \"rating\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Índice único registrationId → 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lista de encuestas (populate)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{eventId}}/surveys?sort=-createdAt",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{eventId}}",
+                "surveys"
+              ],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "-createdAt"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Lista → 200\", () => pm.response.to.have.status(200));",
+                  "pm.test('populate trae el título del evento', () => pm.expect(pm.response.json()[0].event.title).to.include('Congreso'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resumen (aggregate)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{eventId}}/surveys/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{eventId}}",
+                "surveys",
+                "summary"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Resumen → 200\", () => pm.response.to.have.status(200));",
+                  "pm.test('Promedio y conteo', () => { const r = pm.response.json(); pm.expect(r.total).to.eql(1); pm.expect(r.avgRating).to.eql(5); pm.expect(r.recommendPct).to.eql(100); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5 · Borrado protegido y limpieza",
+      "item": [
+        {
+          "name": "Borrar evento con inscritos → 409",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{eventId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"PostgreSQL lo usa → 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancelar inscripción A",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/registrations/{{registrationId}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "registrations",
+                "{{registrationId}}",
+                "cancel"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Cancelar → 200\", () => pm.response.to.have.status(200));",
+                  "pm.test('Estado CANCELADA', () => pm.expect(pm.response.json().status).to.eql('CANCELADA'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Borrar evento (cascada)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{eventId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Borrar → 200\", () => pm.response.to.have.status(200));",
+                  "pm.test('Borra las encuestas en cascada', () => { const r = pm.response.json(); pm.expect(r.surveysDeleted).to.eql(1); pm.expect(r.registrationsDetached).to.eql(1); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Evento borrado → 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "events",
+                "{{eventId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Ya no existe → 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar cuenta A",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Limpieza A → 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar cuenta B",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenB}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Limpieza B → 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "runId",
+      "value": ""
+    },
+    {
+      "key": "eventCode",
+      "value": ""
+    },
+    {
+      "key": "tokenA",
+      "value": ""
+    },
+    {
+      "key": "tokenB",
+      "value": ""
+    },
+    {
+      "key": "userIdA",
+      "value": ""
+    },
+    {
+      "key": "eventId",
+      "value": ""
+    },
+    {
+      "key": "registrationId",
+      "value": ""
+    }
+  ]
+}
